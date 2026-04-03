@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "MJ Discord Capture",
+  "version": "0.1.0",
+  "description": "Capture Discord API requests for Midjourney Custom Zoom and Vary (Region).",
+  "permissions": ["webRequest", "storage", "downloads"],
+  "host_permissions": [
+    "https://discord.com/*",
+    "https://*.discord.com/*",
+    "https://*.discordapp.com/*",
+    "https://*.discordsays.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "MJ Capture",
+    "default_popup": "popup.html"
+  },
+  "minimum_chrome_version": "109"
+}
+

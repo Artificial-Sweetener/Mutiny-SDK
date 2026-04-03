@@ -1,0 +1,6 @@
+httpx
+websockets==13.1
+pydantic
+pydantic-settings
+python-dotenv
+keyring

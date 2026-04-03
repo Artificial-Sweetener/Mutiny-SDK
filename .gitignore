@@ -1,0 +1,69 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# Pytest caches and test artifacts
+.pytest_cache/
+# Generic test result files in repo root
+test-results*
+# Test output directories
+outputs/
+tests/outputs/
+tests/artifacts/
+tests/tests/
+
+# Local cache and databases
+.cache/
+*.sqlite
+*.db
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Type checker caches
+.mypy_cache/
+.pytype/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.iml
+
+# Env files (include test creds file)
+.env
+tests/.env
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Logs
+*.log
+
+# Scratch helper files
+temp_*.txt
+examples/reference/user_settings.json
+
+# Legacy capture artifacts
+objects/
+
+# Capture outputs (debug tooling)
+**/mj_capture_*.jsonl
+**/live_capture.jsonl
+
+# Local readme experiments
+readme_examples/

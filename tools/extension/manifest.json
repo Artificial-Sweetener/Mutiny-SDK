@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "MJ Discord Capture (Firefox)",
+  "version": "0.1.0",
+  "description": "Capture Discord API requests for Midjourney Custom Zoom and Vary (Region) flows.",
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "downloads",
+    "https://discord.com/*",
+    "https://*.discord.com/*",
+    "https://*.discordapp.com/*",
+    "https://*.discordsays.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "MJ Capture",
+    "default_popup": "popup.html"
+  },
+  "applications": {
+    "gecko": {
+      "id": "mj-capture@mutiny",
+      "strict_min_version": "109.0"
+    }
+  }
+}
+
