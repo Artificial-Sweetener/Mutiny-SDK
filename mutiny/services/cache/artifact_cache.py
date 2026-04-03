@@ -29,7 +29,7 @@ import logging
 import time
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Optional, TypedDict
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict, cast
 
 from mutiny.services.image_utils import phash_to_int
 from mutiny.services.persistence.persistent_kv import PersistentKV
@@ -173,7 +173,7 @@ class ArtifactCacheRecord:
             index=ref.index,
             kind=ref.kind,
             prompt_text=ref.prompt_text,
-            tile_follow_up_mode=ref.tile_follow_up_mode,
+            tile_follow_up_mode=_normalize_tile_follow_up_mode(ref.tile_follow_up_mode),
             action_custom_ids=dict(ref.action_custom_ids or {}),
         )
 
@@ -225,7 +225,7 @@ class ArtifactCacheRecord:
         if phash_value is not None:
             phash_value = phash_to_int(phash_value)
         return cls(
-            artifact_kind=str(obj["artifact_kind"]),
+            artifact_kind=cast(ArtifactKind, str(obj["artifact_kind"])),
             digest=str(obj["digest"]),
             ts=float(obj.get("ts") or time.time()),
             source_url=obj.get("source_url"),
@@ -406,8 +406,10 @@ class ArtifactCacheService:
             distance = (int(candidate["phash"]) ^ int(phash)).bit_count()
             if distance > phash_threshold or distance >= best_dist:
                 continue
-            record = self._get_record("image", candidate["digest"])
-            ref = self._record_job_ref(record)
+            candidate_record: ArtifactCacheRecord | None = self._get_record(
+                "image", candidate["digest"]
+            )
+            ref = self._record_job_ref(candidate_record)
             if ref is None:
                 continue
             if expected_kind and ref.kind != expected_kind:
@@ -458,7 +460,7 @@ class ArtifactCacheService:
             index=ref.index,
             kind=ref.kind,
             prompt_text=ref.prompt_text,
-            tile_follow_up_mode=ref.tile_follow_up_mode,
+            tile_follow_up_mode=_normalize_tile_follow_up_mode(ref.tile_follow_up_mode),
             action_custom_ids=dict(ref.action_custom_ids or {}),
         )
 
@@ -607,8 +609,12 @@ class ArtifactCacheService:
         source_url_ts = None
         message_ref: JobRef | None = None
 
+        disk = self._disk
+        if disk is None:
+            return None
+
         try:
-            raw_url = self._disk.get(_LEGACY_IMAGE_URL_NAMESPACE, digest)
+            raw_url = disk.get(_LEGACY_IMAGE_URL_NAMESPACE, digest)
         except Exception:
             raw_url = None
         if raw_url:
@@ -624,7 +630,7 @@ class ArtifactCacheService:
                 )
 
         try:
-            raw_ref = self._disk.get(_LEGACY_IMAGE_REF_NAMESPACE, digest)
+            raw_ref = disk.get(_LEGACY_IMAGE_REF_NAMESPACE, digest)
         except Exception:
             raw_ref = None
         if raw_ref:
@@ -709,8 +715,12 @@ class ArtifactCacheService:
         return record
 
     def _load_legacy_video_record(self, digest: str) -> ArtifactCacheRecord | None:
+        disk = self._disk
+        if disk is None:
+            return None
+
         try:
-            raw_ref = self._disk.get(_LEGACY_VIDEO_REF_NAMESPACE, digest)
+            raw_ref = disk.get(_LEGACY_VIDEO_REF_NAMESPACE, digest)
         except Exception:
             raw_ref = None
         if not raw_ref:

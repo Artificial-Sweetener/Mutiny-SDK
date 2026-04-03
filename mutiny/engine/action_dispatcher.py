@@ -44,6 +44,20 @@ from mutiny.types import AnimateMotion, Job, JobAction
 logger = logging.getLogger(__name__)
 
 
+def _indexed_filename_factory(prefix: str, index: int) -> Callable[[str], str]:
+    def _filename_factory(extension: str) -> str:
+        return f"{prefix}_{index}{extension}"
+
+    return _filename_factory
+
+
+def _plain_filename_factory(prefix: str) -> Callable[[str], str]:
+    def _filename_factory(extension: str) -> str:
+        return f"{prefix}{extension}"
+
+    return _filename_factory
+
+
 @dataclass(frozen=True)
 class ActionContext:
     """Bundle provider and cache dependencies used by one action executor."""
@@ -117,7 +131,7 @@ async def _prepare_cdn_image_urls(
             job,
             value,
             index_label=f"{label_prefix} {index}",
-            filename_factory=lambda ext, idx=index: f"{filename_prefix}_{idx}{ext}",
+            filename_factory=_indexed_filename_factory(filename_prefix, index),
             use_cache=True,
             fetch_cdn=True,
             cdn_required=True,
@@ -238,7 +252,7 @@ async def _exec_describe(ctx: ActionContext, job: Job, nonce: str) -> str | None
         job,
         job.inputs.base64 or "",
         index_label="",
-        filename_factory=lambda ext: f"{job.id}{ext}",
+        filename_factory=_plain_filename_factory(job.id),
         use_cache=True,
         fetch_cdn=True,
         cdn_required=False,
@@ -256,7 +270,7 @@ async def _exec_describe(ctx: ActionContext, job: Job, nonce: str) -> str | None
             job,
             job.inputs.base64 or "",
             index_label="",
-            filename_factory=lambda ext: f"{job.id}{ext}",
+            filename_factory=_plain_filename_factory(job.id),
             use_cache=False,
             fetch_cdn=False,
             cdn_required=False,
@@ -280,7 +294,7 @@ async def _exec_describe(ctx: ActionContext, job: Job, nonce: str) -> str | None
             job,
             job.inputs.base64 or "",
             index_label="",
-            filename_factory=lambda ext: f"{job.id}{ext}",
+            filename_factory=_plain_filename_factory(job.id),
             use_cache=False,
             fetch_cdn=False,
             cdn_required=False,
@@ -302,7 +316,7 @@ async def _exec_blend(ctx: ActionContext, job: Job, nonce: str) -> str | None:
             job,
             b64,
             index_label=f"index {i}",
-            filename_factory=lambda ext, idx=i: f"{job.id}_{idx}{ext}",
+            filename_factory=_indexed_filename_factory(job.id, i),
             use_cache=False,
             fetch_cdn=False,
             cdn_required=False,
@@ -556,7 +570,7 @@ async def _prepare_prompt_video_frame(
         job,
         data_url,
         index_label=index_label,
-        filename_factory=lambda ext: f"{filename_prefix}{ext}",
+        filename_factory=_plain_filename_factory(filename_prefix),
         use_cache=True,
         fetch_cdn=True,
         cdn_required=True,
@@ -577,10 +591,15 @@ async def _exec_animate(ctx: ActionContext, job: Job, nonce: str) -> str | None:
             if job.action is JobAction.ANIMATE_HIGH
             else ctx.commands.animate_low
         )
+        message_id = str(job.context.message_id)
+        index_value = job.context.index
+        assert index_value is not None
+        index = int(index_value)
+        message_hash = str(job.context.message_hash)
         return await provider_fn(
-            job.context.message_id,
-            job.context.index,
-            job.context.message_hash,
+            message_id,
+            index,
+            message_hash,
             job.context.flags or 0,
             nonce,
         )
@@ -625,9 +644,11 @@ async def _exec_custom_zoom(ctx: ActionContext, job: Job, nonce: str) -> str | N
     err = _ensure_job_props(job, ["message_id", "message_hash", "zoom_text"])
     if err:
         return err
+    message_id = str(job.context.message_id)
+    message_hash = str(job.context.message_hash)
     return await ctx.commands.custom_zoom(
-        job.context.message_id,
-        job.context.message_hash,
+        message_id,
+        message_hash,
         job.context.flags or 0,
         nonce,
         job.context.zoom_text or "",
@@ -648,20 +669,23 @@ async def _exec_inpaint(ctx: ActionContext, job: Job, nonce: str) -> str | None:
     )
     if err:
         return err
-    target_cid = build_inpaint_custom_id(
-        int(job.context.index or 1), job.context.message_hash or ""
-    )
+    message_id = str(job.context.message_id)
+    index_value = job.context.index
+    assert index_value is not None
+    index = int(index_value)
+    message_hash = str(job.context.message_hash)
+    target_cid = build_inpaint_custom_id(index, message_hash)
     await _poll_message_component(
         ctx,
-        message_id=str(job.context.message_id or ""),
+        message_id=message_id,
         target_label="Inpaint",
         resolve_custom_id=lambda components: target_cid if target_cid in components else None,
         job=job,
     )
     res = await ctx.commands.inpaint_button(
-        job.context.message_id,
-        job.context.index,
-        job.context.message_hash,
+        message_id,
+        index,
+        message_hash,
         job.context.flags or 0,
         nonce,
     )

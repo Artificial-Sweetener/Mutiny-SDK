@@ -112,13 +112,16 @@ class IndexingCoordinator:
 
                 msg_hash = job.context.message_hash or extract_message_hash(url) or ""
                 action_custom_ids = _extract_action_custom_ids(message)
+                message_id = message.get("id")
+                if not message_id:
+                    return
                 for tile in tiles:
                     digest = proc.compute_digest(tile.image_bytes)
                     phv = proc.compute_phash(tile.image_bytes)
                     tw, th = proc.get_dimensions(tile.image_bytes)
                     self._artifact_cache.put_image_job_ref(
                         digest,
-                        message_id=message.get("id"),
+                        message_id=str(message_id),
                         message_hash=msg_hash,
                         flags=flags,
                         index=tile.index,
@@ -142,10 +145,12 @@ class IndexingCoordinator:
                 digest = proc.compute_digest(data)
                 phv = proc.compute_phash(data)
                 msg_id = message.get("id")
+                if not msg_id:
+                    return
                 msg_hash = job.context.message_hash or extract_message_hash(url) or ""
                 self._artifact_cache.put_image_job_ref(
                     digest,
-                    message_id=msg_id,
+                    message_id=str(msg_id),
                     message_hash=msg_hash,
                     flags=flags,
                     prompt_text=job.context.final_prompt or job.prompt,
@@ -185,10 +190,13 @@ class IndexingCoordinator:
             data = await self._commands.fetch_cdn_bytes(url)
             if not data:
                 return
+            message_id = message.get("id")
+            if not message_id:
+                return
             signature = self._video_signature_service.compute_signature(data)
             self._artifact_cache.put_video_job_ref(
                 signature.digest,
-                message_id=message.get("id"),
+                message_id=str(message_id),
                 message_hash=job.context.message_hash,
                 flags=int(message.get("flags") or 0),
                 signature_version=signature.version,

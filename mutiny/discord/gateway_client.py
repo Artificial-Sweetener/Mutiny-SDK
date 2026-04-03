@@ -336,10 +336,9 @@ class DiscordGatewayClient:
 
             if t in ("MESSAGE_CREATE", "MESSAGE_UPDATE"):
                 event_data = data["d"]
-                if self.message_handler:
-                    res = self.message_handler(t, event_data)
-                    if asyncio.iscoroutine(res):
-                        await res
+                res = self.message_handler(t, event_data)
+                if asyncio.iscoroutine(res):
+                    await res
 
         elif op == 7:
             logger.warning(f"WS - RECONNECT requested by server for {self.identity.channel_id}")

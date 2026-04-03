@@ -52,7 +52,7 @@ class JobTimeoutScheduler:
             ]
 
             for job in active_jobs:
-                if (now - (job.start_time / 1000)) > timeout_seconds:
+                if job.start_time is not None and (now - (job.start_time / 1000)) > timeout_seconds:
                     JobStateMachine.apply(
                         job,
                         JobTransition.FAIL,

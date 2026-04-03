@@ -35,27 +35,35 @@ SENSITIVE_PATTERNS: Iterable[tuple[re.Pattern[str], int]] = [
 ]
 
 
+def _redact_match(match: re.Match[str], kind: int) -> str:
+    if kind == 1:  # Authorization header
+        return f"{match.group(1)}{match.group(2)}[REDACTED]"
+    if kind == 2:  # query param
+        return f"{match.group(1)}{match.group(2)}=[REDACTED]"
+    # key-value with sensitive key
+    prefix = match.group("prefix") if "prefix" in match.groupdict() else ""
+    key = match.group("key") if "key" in match.groupdict() else match.group(1)
+    return f"{prefix}{key}: [REDACTED]"
+
+
+def _pattern_replacer(kind: int):
+    def _replace_match(match: re.Match[str]) -> str:
+        return _redact_match(match, kind)
+
+    return _replace_match
+
+
 def _scrub(text: str) -> str:
     if not text:
         return text
 
-    def _repl(m: re.Match[str], kind: int) -> str:
-        if kind == 1:  # Authorization header
-            return f"{m.group(1)}{m.group(2)}[REDACTED]"
-        if kind == 2:  # query param
-            return f"{m.group(1)}{m.group(2)}=[REDACTED]"
-        # key-value with sensitive key
-        prefix = m.group("prefix") if "prefix" in m.groupdict() else ""
-        key = m.group("key") if "key" in m.groupdict() else m.group(1)
-        return f"{prefix}{key}: [REDACTED]"
-
     for pat, kind in SENSITIVE_PATTERNS:
-        text = pat.sub(lambda m, k=kind: _repl(m, k), text)
+        text = pat.sub(_pattern_replacer(kind), text)
     return text
 
 
 class SensitiveDataFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:  # type: ignore[override]
+    def filter(self, record: logging.LogRecord) -> bool:
         try:
             rendered = (
                 record.msg % record.args

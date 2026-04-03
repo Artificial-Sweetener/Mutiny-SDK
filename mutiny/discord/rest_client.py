@@ -489,6 +489,7 @@ class DiscordRestClient:
             logger.error(f"Error sending custom-zoom modal: {msg}")
             self.metrics.increment_discord_error("rest")
             return msg
+        return "Custom zoom modal was not accepted"
 
     async def inpaint_button(
         self, message_id: str, index: int, message_hash: str, message_flags: int, nonce: str

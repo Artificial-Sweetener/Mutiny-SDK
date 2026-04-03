@@ -19,11 +19,12 @@
 from __future__ import annotations
 
 import importlib
+import sys
 from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import tomllib
+tomllib = importlib.import_module("tomllib" if sys.version_info >= (3, 11) else "tomli")
 
 # Install a global logging scrubber to ensure secrets never hit logs
 try:

@@ -19,15 +19,18 @@ from __future__ import annotations
 from typing import List, Literal, TypedDict, Union
 
 
-class InteractionBase(TypedDict):
-    type: int
+class InteractionEnvelope(TypedDict):
     application_id: str
     guild_id: str
     channel_id: str
     nonce: str
 
 
-class InteractionWithSession(InteractionBase, total=False):
+class InteractionWithSession(TypedDict, total=False):
+    application_id: str
+    guild_id: str
+    channel_id: str
+    nonce: str
     session_id: str
 
 
@@ -130,7 +133,6 @@ class InpaintSubmitBody(TypedDict):
 
 
 __all__ = [
-    "InteractionBase",
     "InteractionWithSession",
     "CommandOptionPrompt",
     "CommandOptionImageUpload",

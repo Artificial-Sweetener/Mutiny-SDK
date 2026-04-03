@@ -134,7 +134,7 @@ class InterpretedMessage:
 class DiscordMessageParser:
     """Parse Discord gateway events into typed message interpretations without mutation."""
 
-    def interpret(self, event_type: str, message: dict) -> Optional[InterpretedMessage]:
+    def interpret(self, event_type: str, message: object) -> Optional[InterpretedMessage]:
         """Classify a Discord gateway message and extract prompt, status, and metadata.
 
         Args:

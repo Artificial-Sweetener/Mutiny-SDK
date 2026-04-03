@@ -107,10 +107,9 @@ class GenerativeCommands(Protocol):
     async def inpaint_submit_job(
         self,
         *,
-        custom_id: str,
+        iframe_token: str,
         mask_webp_base64: str,
         prompt: str | None,
-        full_prompt: str | None,
     ) -> str | None: ...
 
     async def upload(self, filename: str, file_content: bytes, mime_type: str) -> str | None: ...

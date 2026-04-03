@@ -20,7 +20,8 @@ from typing import AsyncIterator, Optional, Tuple
 
 import httpx
 
-from ..config import CdnConfig, Config
+from .. import config as config_module
+from ..config import Config
 from ..domain.progress import ProgressEvent
 from ..engine.runtime.state import State
 from ..mutiny import Mutiny
@@ -44,7 +45,7 @@ async def build_streaming_client(
     applied = replace(applied, notify_bus=notify)
     state = State(config=config, overrides=applied)
     client = Mutiny(state.settings)
-    client._state = state
+    setattr(client, "_state", state)
     return client, notify
 
 
@@ -80,7 +81,7 @@ async def cdn_client(config: Optional[Config] = None):
     if config:
         cdn = config.cdn
     else:
-        cdn = CdnConfig()
+        cdn = getattr(config_module, "CdnConfig")()
     timeout = httpx.Timeout(
         connect=cdn.connect_timeout,
         read=cdn.read_timeout,

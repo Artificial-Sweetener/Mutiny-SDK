@@ -17,9 +17,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, TypeVar, cast
 
 from mutiny.types import Result
+
+TResult = TypeVar("TResult")
 
 
 @dataclass(frozen=True)
@@ -72,14 +74,17 @@ def error_result(
     *,
     message: Optional[str] = None,
     validation_error: bool = False,
-) -> Result[None]:
+) -> Result[TResult]:
     """Create a Result from the error catalog."""
 
-    return Result(
-        code=spec.code,
-        message=message or spec.message,
-        http_status=spec.http_status,
-        validation_error=validation_error,
+    return cast(
+        Result[TResult],
+        Result(
+            code=spec.code,
+            message=message or spec.message,
+            http_status=spec.http_status,
+            validation_error=validation_error,
+        ),
     )
 
 

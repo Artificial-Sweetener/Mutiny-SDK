@@ -26,8 +26,6 @@ from mutiny.discord.constants import (
     DESCRIBE,
     IMAGINE,
     CommandMeta,
-    ComponentType,
-    InteractionType,
 )
 from mutiny.discord.identity import DiscordIdentity
 from mutiny.discord.payload_types import (
@@ -48,13 +46,11 @@ class DiscordPayloadBuilder:
         self,
         identity: DiscordIdentity,
         nonce: str,
-        type_: InteractionType,
         *,
         session_id: Optional[str],
     ) -> InteractionWithSession:
         """Build the shared interaction envelope with optional session id."""
         payload: InteractionWithSession = {
-            "type": int(type_),
             "application_id": APPLICATION_ID,
             "guild_id": identity.guild_id,
             "channel_id": identity.channel_id,
@@ -68,16 +64,17 @@ class DiscordPayloadBuilder:
         self, meta: CommandMeta, identity: DiscordIdentity, nonce: str, *, session_id: Optional[str]
     ) -> CommandInteraction:
         """Initialize an application command payload with empty data/options."""
-        payload: CommandInteraction = self._base_interaction(
-            identity, nonce, InteractionType.COMMAND, session_id=session_id
-        )
-        payload["data"] = {
-            "version": meta["version"],
-            "id": meta["id"],
-            "name": meta["name"],
-            "type": 1,
-            "options": [],
-            "attachments": [],
+        payload: CommandInteraction = {
+            **self._base_interaction(identity, nonce, session_id=session_id),
+            "type": 2,
+            "data": {
+                "version": meta["version"],
+                "id": meta["id"],
+                "name": meta["name"],
+                "type": 1,
+                "options": [],
+                "attachments": [],
+            },
         }
         return payload
 
@@ -190,14 +187,15 @@ class DiscordPayloadBuilder:
         Preserves the upstream `custom_id` so downstream handlers route to the exact action
         encoded in Discord component metadata.
         """
-        payload: ButtonInteraction = self._base_interaction(
-            identity, nonce, InteractionType.COMPONENT, session_id=session_id
-        )
-        payload["message_id"] = message_id
-        payload["message_flags"] = int(message_flags)
-        payload["data"] = {
-            "component_type": int(ComponentType.BUTTON),
-            "custom_id": custom_id,
+        payload: ButtonInteraction = {
+            **self._base_interaction(identity, nonce, session_id=session_id),
+            "type": 3,
+            "message_id": message_id,
+            "message_flags": int(message_flags),
+            "data": {
+                "component_type": 2,
+                "custom_id": custom_id,
+            },
         }
         return payload
 
@@ -212,26 +210,26 @@ class DiscordPayloadBuilder:
         session_id: Optional[str] = None,
     ) -> ModalSubmitInteraction:
         """Create a custom zoom modal submit with prompt text pre-filled in the input field."""
-        payload: ModalSubmitInteraction = self._base_interaction(
-            identity, nonce, InteractionType.MODAL_SUBMIT, session_id=session_id
-        )
-        data = {
-            "id": modal_id or nonce,
-            "custom_id": custom_id,
-            "components": [
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 4,
-                            "custom_id": CUSTOM_ZOOM_PROMPT_INPUT_ID,
-                            "value": zoom_text,
-                        }
-                    ],
-                }
-            ],
+        payload: ModalSubmitInteraction = {
+            **self._base_interaction(identity, nonce, session_id=session_id),
+            "type": 5,
+            "data": {
+                "id": modal_id or nonce,
+                "custom_id": custom_id,
+                "components": [
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "type": 4,
+                                "custom_id": CUSTOM_ZOOM_PROMPT_INPUT_ID,
+                                "value": zoom_text,
+                            }
+                        ],
+                    }
+                ],
+            },
         }
-        payload["data"] = data
         return payload
 
     def build_inpaint_submit_body(

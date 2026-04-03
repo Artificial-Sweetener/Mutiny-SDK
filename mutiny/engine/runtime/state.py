@@ -22,7 +22,8 @@ import asyncio
 import os
 from typing import Optional
 
-from ...config import Config, _load_env_config
+from ... import config as config_module
+from ...config import Config
 from ...discord.identity import DiscordIdentity
 from ...engine.discord_engine import DiscordEngine
 from ...engine.execution_policy import EnginePolicy
@@ -71,7 +72,7 @@ class State:
     def settings(self) -> Config:
         if self._config is None:
             if os.getenv("MJ_USER_TOKEN"):
-                self._config = _load_env_config()
+                self._config = getattr(config_module, "_load_env_config")()
             else:
                 raise RuntimeError("Config is required when MJ_USER_TOKEN is not set")
         self._validate_single_identity(self._config)
@@ -145,6 +146,8 @@ class State:
         if not ctx:
             raise RuntimeError("Mutiny is not started")
         engine = ctx.engine
+        if engine is None:
+            raise RuntimeError("Engine is not initialized")
 
         idle = await self._wait_for_engine_idle(engine)
         if not idle:

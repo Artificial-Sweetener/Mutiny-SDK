@@ -53,7 +53,8 @@ def scan_gateway_event(
     """Inspect a Discord DISPATCH payload and opportunistically cache metadata."""
 
     event_type = data.get("t")
-    event_data = data.get("d") if isinstance(data.get("d"), dict) else {}
+    raw_event_data = data.get("d")
+    event_data: dict[str, Any] = raw_event_data if isinstance(raw_event_data, dict) else {}
     result = EventScanResult()
 
     try:

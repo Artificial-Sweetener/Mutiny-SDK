@@ -23,7 +23,7 @@ import logging
 import re
 import uuid
 from dataclasses import dataclass
-from typing import Callable, Final, Optional
+from typing import Callable, Final, Optional, TypeVar, cast
 
 from mutiny.domain.state_machine import JobStateMachine, JobTransition
 from mutiny.domain.time import get_current_timestamp_ms
@@ -94,6 +94,9 @@ from mutiny.types import (
 )
 
 # Consolidated JobAction scopes for validation; keep these as the single source of truth.
+TResultValue = TypeVar("TResultValue")
+
+
 IMAGE_CHANGE_ACTIONS: Final[frozenset[JobAction]] = frozenset(
     {
         JobAction.UPSCALE,
@@ -196,7 +199,9 @@ class JobSubmissionService:
     def _require_image_processor(self):
         return self._ctx.image_processor
 
-    def _validation_error(self, spec: ErrorSpec, *, message: str | None = None) -> Result[None]:
+    def _validation_error(
+        self, spec: ErrorSpec, *, message: str | None = None
+    ) -> Result[TResultValue]:
         return error_result(spec, message=message, validation_error=True)
 
     def _validate_data_url_list(
@@ -779,16 +784,16 @@ class JobSubmissionService:
         if pre_validation:
             err = pre_validation()
             if err:
-                return err
+                return cast(Result[str], err)
 
         engine_instance = instance or self._require_engine()
         if not engine_instance:
-            return error_result(NO_AVAILABLE_ACCOUNTS)
+            return cast(Result[str], error_result(NO_AVAILABLE_ACCOUNTS))
 
         if post_engine_validation:
             err = post_engine_validation()
             if err:
-                return err
+                return cast(Result[str], err)
 
         job = Job(id=str(uuid.uuid4()), action=action, prompt=prompt, state=state)
 
@@ -1099,7 +1104,7 @@ class JobSubmissionService:
             video_bytes=cmd.video_bytes,
         )
         if err:
-            return err
+            return cast(Result[str], err)
         if not resolved_ctx:
             return self._validation_error(MISSING_VIDEO_CONTEXT)
         resolved = resolved_ctx

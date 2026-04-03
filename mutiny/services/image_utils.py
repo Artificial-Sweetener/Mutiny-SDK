@@ -22,7 +22,7 @@ import base64
 import hashlib
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, cast
 
 import cv2
 import numpy as np
@@ -61,8 +61,10 @@ def phash_to_int(phash: object) -> int:
             return int(phash, 16)
         except Exception:
             return int(phash)
-    try:
+    if isinstance(phash, (bytes, bytearray)):
         return int(phash)
+    try:
+        return int(cast(int | float | str, phash))
     except Exception:
         return int(str(phash), 16)
 
@@ -79,7 +81,7 @@ def compute_phash_array(rgb: object, *, hash_size: int = 8, highfreq_factor: int
         flat = lowfreq.flatten()
         if flat.size <= 1:
             return None
-        median = np.median(flat[1:])
+        median = float(np.median(flat[1:].astype(np.float32).tolist()))
         diff = lowfreq > median
         bits = 0
         for value in diff.flatten():

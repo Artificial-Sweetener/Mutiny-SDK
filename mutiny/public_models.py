@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
 
-from .types import JobStatus
+from .types import JobStatus as JobStatus
 
 ImageInput: TypeAlias = bytes | str | Path
 VideoInput: TypeAlias = bytes | str | Path

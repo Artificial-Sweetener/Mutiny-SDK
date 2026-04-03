@@ -53,6 +53,17 @@ from .timeouts import JobTimeoutScheduler
 logger = logging.getLogger(__name__)
 
 
+async def _run_concurrent(*coroutines) -> None:
+    """Run engine loops concurrently across Python 3.10+."""
+
+    if hasattr(asyncio, "TaskGroup"):
+        async with asyncio.TaskGroup() as task_group:
+            for coroutine in coroutines:
+                task_group.create_task(coroutine)
+        return
+    await asyncio.gather(*coroutines)
+
+
 class DiscordEngine:
     """Drive Discord provider execution, queueing, and job lifecycle flow."""
 
@@ -179,10 +190,11 @@ class DiscordEngine:
         mutating provider payloads to preserve behavior-freeze guarantees.
         """
         try:
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(self.provider.start())
-                tg.create_task(self.worker())
-                tg.create_task(self.timeout_scheduler.run())
+            await _run_concurrent(
+                self.provider.start(),
+                self.worker(),
+                self.timeout_scheduler.run(),
+            )
         except Exception as exc:
             exceptions = getattr(exc, "exceptions", (exc,))
             for err in exceptions:
@@ -473,12 +485,12 @@ class DiscordEngine:
     @staticmethod
     def _retune_semaphore(sem: asyncio.Semaphore, old_limit: int, new_limit: int) -> None:
         try:
-            acquired = max(0, int(old_limit) - int(sem._value))  # type: ignore[attr-defined]
+            acquired = max(0, int(old_limit) - int(getattr(sem, "_value")))
             new_value = max(0, int(new_limit) - acquired)
-            sem._value = new_value  # type: ignore[attr-defined]
+            setattr(sem, "_value", new_value)
         except Exception:
             try:
-                sem._value = max(0, int(new_limit))  # type: ignore[attr-defined]
+                setattr(sem, "_value", max(0, int(new_limit)))
             except Exception:
                 # Ignore retune failures; concurrency will settle as tasks complete.
                 pass

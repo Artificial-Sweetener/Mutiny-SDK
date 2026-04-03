@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Any, Dict, List, cast
 
 from mutiny.domain.progress import ProgressEvent
 from mutiny.types import Job, JobStatus
@@ -45,10 +45,10 @@ class JobUpdateBus:
     def unsubscribe_progress(self, job_id: str, queue: asyncio.Queue[ProgressEvent]) -> None:
         raise NotImplementedError
 
-    def subscribe_all(self) -> asyncio.Queue[Union[Job, ProgressEvent]]:
+    def subscribe_all(self) -> asyncio.Queue[Job | ProgressEvent]:
         raise NotImplementedError
 
-    def unsubscribe_all(self, queue: asyncio.Queue[Union[Job, ProgressEvent]]) -> None:
+    def unsubscribe_all(self, queue: asyncio.Queue[Job | ProgressEvent]) -> None:
         raise NotImplementedError
 
     async def close(self) -> None:
@@ -61,7 +61,7 @@ class StreamingJobUpdateBus(JobUpdateBus):
     def __init__(self) -> None:
         self._subs: Dict[str, List[asyncio.Queue[Job]]] = defaultdict(list)
         self._progress_subs: Dict[str, List[asyncio.Queue[ProgressEvent]]] = defaultdict(list)
-        self._global_subs: List[asyncio.Queue[Union[Job, ProgressEvent]]] = []
+        self._global_subs: List[asyncio.Queue[Job | ProgressEvent]] = []
 
     def subscribe(self, job_id: str) -> asyncio.Queue[Job]:
         q: asyncio.Queue[Job] = asyncio.Queue(maxsize=100)
@@ -69,7 +69,11 @@ class StreamingJobUpdateBus(JobUpdateBus):
         return q
 
     def unsubscribe(self, job_id: str, queue: asyncio.Queue[Job]) -> None:
-        self._remove_queue(self._subs, job_id, queue)
+        self._remove_queue(
+            cast(Dict[str, List[asyncio.Queue[Any]]], self._subs),
+            job_id,
+            cast(asyncio.Queue[Any], queue),
+        )
 
     def subscribe_progress(self, job_id: str) -> asyncio.Queue[ProgressEvent]:
         q: asyncio.Queue[ProgressEvent] = asyncio.Queue(maxsize=100)
@@ -77,14 +81,18 @@ class StreamingJobUpdateBus(JobUpdateBus):
         return q
 
     def unsubscribe_progress(self, job_id: str, queue: asyncio.Queue[ProgressEvent]) -> None:
-        self._remove_queue(self._progress_subs, job_id, queue)
+        self._remove_queue(
+            cast(Dict[str, List[asyncio.Queue[Any]]], self._progress_subs),
+            job_id,
+            cast(asyncio.Queue[Any], queue),
+        )
 
-    def subscribe_all(self) -> asyncio.Queue[Union[Job, ProgressEvent]]:
-        q: asyncio.Queue[Union[Job, ProgressEvent]] = asyncio.Queue(maxsize=500)
+    def subscribe_all(self) -> asyncio.Queue[Job | ProgressEvent]:
+        q: asyncio.Queue[Job | ProgressEvent] = asyncio.Queue(maxsize=500)
         self._global_subs.append(q)
         return q
 
-    def unsubscribe_all(self, queue: asyncio.Queue[Union[Job, ProgressEvent]]) -> None:
+    def unsubscribe_all(self, queue: asyncio.Queue[Job | ProgressEvent]) -> None:
         try:
             self._global_subs.remove(queue)
         except ValueError:
@@ -95,13 +103,13 @@ class StreamingJobUpdateBus(JobUpdateBus):
 
     def _publish(self, job: Job) -> None:
         # Push to job-specific subscribers
-        qs = self._subs.get(job.id) or []
+        qs: list[asyncio.Queue[Job]] = self._subs.get(job.id) or []
         for q in list(qs):
-            self._push_idx_queue(q, job)
+            self._push_idx_queue(cast(asyncio.Queue[Any], q), job)
 
         # Push to global subscribers
-        for q in list(self._global_subs):
-            self._push_idx_queue(q, job)
+        for global_queue in list(self._global_subs):
+            self._push_idx_queue(cast(asyncio.Queue[Any], global_queue), job)
 
         if job.status in {JobStatus.SUCCEEDED, JobStatus.FAILED}:
             self._subs.pop(job.id, None)
@@ -111,15 +119,15 @@ class StreamingJobUpdateBus(JobUpdateBus):
         self._publish_progress(event)
 
     def _publish_progress(self, event: ProgressEvent) -> None:
-        qs = self._progress_subs.get(event.job_id) or []
+        qs: list[asyncio.Queue[ProgressEvent]] = self._progress_subs.get(event.job_id) or []
         for q in list(qs):
-            self._push_idx_queue(q, event)
+            self._push_idx_queue(cast(asyncio.Queue[Any], q), event)
 
         # Push to global subscribers
-        for q in list(self._global_subs):
-            self._push_idx_queue(q, event)
+        for global_queue in list(self._global_subs):
+            self._push_idx_queue(cast(asyncio.Queue[Any], global_queue), event)
 
-    def _push_idx_queue(self, q: asyncio.Queue, item):
+    def _push_idx_queue(self, q: asyncio.Queue[Any], item: Any) -> None:
         try:
             q.put_nowait(item)
         except asyncio.QueueFull:
@@ -134,9 +142,9 @@ class StreamingJobUpdateBus(JobUpdateBus):
 
     @staticmethod
     def _remove_queue(
-        mapping: Dict[str, List[asyncio.Queue]],
+        mapping: Dict[str, List[asyncio.Queue[Any]]],
         job_id: str,
-        queue: asyncio.Queue,
+        queue: asyncio.Queue[Any],
     ) -> None:
         queues = mapping.get(job_id)
         if not queues:
