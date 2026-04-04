@@ -24,8 +24,8 @@ class DiscordAccount(BaseModel):
     channel_id: str
     user_token: str
     user_agent: str = (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
+        "Chrome/146.0.7680.165 Safari/537.36"
     )
     session_id: Optional[str] = None

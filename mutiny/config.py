@@ -44,7 +44,8 @@ class _EnvSettings(BaseSettings):
     guild_id: str
     channel_id: str
     user_agent: str = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/146.0.7680.165 Safari/537.36"
     )
     discord_api_endpoint: str = "https://discord.com/api/v9"
 
@@ -96,7 +97,8 @@ class DiscordConfig:
     guild_id: str
     channel_id: str
     user_agent: str = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/146.0.7680.165 Safari/537.36"
     )
     api_endpoint: str = "https://discord.com/api/v9"
 

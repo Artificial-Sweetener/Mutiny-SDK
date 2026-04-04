@@ -63,7 +63,7 @@
   - env：`MJ_CHANNEL_ID`
   - 含义：Mutiny 提交任务的 Discord channel
 - `user_agent`
-  - 默认值：`Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0`
+  - 默认值：`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.165 Safari/537.36`
   - env：`MJ_USER_AGENT`
   - 含义：发送给 Discord 的 user agent
 - `api_endpoint`

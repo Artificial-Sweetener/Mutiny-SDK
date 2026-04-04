@@ -63,7 +63,7 @@ Behavior notes:
   - env: `MJ_CHANNEL_ID`
   - meaning: Discord channel Mutiny submits into
 - `user_agent`
-  - default: `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0`
+  - default: `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.165 Safari/537.36`
   - env: `MJ_USER_AGENT`
   - meaning: user agent sent to Discord
 - `api_endpoint`
