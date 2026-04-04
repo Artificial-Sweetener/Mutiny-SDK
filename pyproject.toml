@@ -4,7 +4,8 @@ version = "1.0.0"
 description = "Unofficial Midjourney integration SDK."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "AGPL-3.0-or-later" }
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 authors = [
     { name = "Artificial Sweetener", email = "artificialsweetenerai@proton.me" }
 ]
@@ -31,7 +32,6 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -52,21 +52,8 @@ Repository = "https://github.com/Artificial-Sweetener/Mutiny-SDK"
 Issues = "https://github.com/Artificial-Sweetener/Mutiny-SDK/issues"
 Documentation = "https://github.com/Artificial-Sweetener/Mutiny-SDK/tree/main/docs"
 
-[tool.setuptools]
-packages = [
-    "mutiny",
-    "mutiny.discord",
-    "mutiny.domain",
-    "mutiny.engine",
-    "mutiny.engine.reactors",
-    "mutiny.interfaces",
-    "mutiny.services",
-    "mutiny.services.cache",
-    "mutiny.services.index",
-    "mutiny.services.metrics",
-    "mutiny.services.notify",
-    "mutiny.services.persistence",
-]
+[tool.setuptools.packages.find]
+include = ["mutiny*"]
 
 [tool.setuptools.package-data]
 mutiny = [
