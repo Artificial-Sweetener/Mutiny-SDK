@@ -39,6 +39,7 @@ from mutiny.interfaces.commands import GenerativeCommands
 from mutiny.services.animate_prompt_builder import build_video_prompt
 from mutiny.services.cache.artifact_cache import ArtifactCacheService
 from mutiny.services.interaction_cache import InteractionCache
+from mutiny.services.prompt_ordering import build_flag_group, order_imagine_prompt
 from mutiny.types import AnimateMotion, Job, JobAction
 
 logger = logging.getLogger(__name__)
@@ -167,6 +168,7 @@ def _format_style_reference_tokens(job: Job, style_urls: list[str]) -> list[str]
 
 
 def _build_imagine_prompt(
+    ctx: ActionContext,
     job: Job,
     *,
     prompt_image_urls: list[str],
@@ -174,28 +176,27 @@ def _build_imagine_prompt(
     character_reference_urls: list[str],
     omni_reference_url: str | None,
 ) -> str:
-    """Compose the final imagine prompt in Midjourney's expected image order."""
-    prompt_parts: list[str] = []
-
-    if prompt_image_urls:
-        prompt_parts.extend(prompt_image_urls)
-
-    prompt_text = (job.prompt or "").strip()
-    if prompt_text:
-        prompt_parts.append(prompt_text)
-
+    """Compose the final imagine prompt using seeded atomic ordering of suffix units."""
+    managed_groups = []
     if style_reference_urls:
-        prompt_parts.append(
-            f"--sref {' '.join(_format_style_reference_tokens(job, style_reference_urls))}"
+        managed_groups.append(
+            build_flag_group(
+                "--sref",
+                f"--sref {' '.join(_format_style_reference_tokens(job, style_reference_urls))}",
+            )
         )
-
     if character_reference_urls:
-        prompt_parts.append(f"--cref {' '.join(character_reference_urls)}")
-
+        managed_groups.append(
+            build_flag_group("--cref", f"--cref {' '.join(character_reference_urls)}")
+        )
     if omni_reference_url:
-        prompt_parts.append(f"--oref {omni_reference_url}")
-
-    return " ".join(part for part in prompt_parts if part).strip()
+        managed_groups.append(build_flag_group("--oref", f"--oref {omni_reference_url}"))
+    return order_imagine_prompt(
+        prompt=job.prompt,
+        prompt_image_urls=prompt_image_urls,
+        managed_groups=managed_groups,
+        store=ctx.artifact_cache.persistent_store(),
+    )
 
 
 @register(JobAction.IMAGINE)
@@ -234,6 +235,7 @@ async def _exec_imagine(ctx: ActionContext, job: Job, nonce: str) -> str | None:
         return None
 
     final_prompt = _build_imagine_prompt(
+        ctx,
         job,
         prompt_image_urls=image_urls,
         style_reference_urls=style_reference_urls,

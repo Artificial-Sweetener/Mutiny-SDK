@@ -292,6 +292,11 @@ class ArtifactCacheService:
         self._prune_expired_memory()
         self._evict_if_needed()
 
+    def persistent_store(self) -> Optional[PersistentKV]:
+        """Return the attached disk-backed KV store when durable cache is enabled."""
+
+        return self._disk
+
     def put_image_upload(self, digest: str, source_url: str) -> None:
         """Persist one image upload/CDN URL keyed by artifact digest."""
         now = time.time()

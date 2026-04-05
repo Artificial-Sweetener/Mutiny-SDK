@@ -216,12 +216,17 @@ async def test_exec_imagine_appends_style_character_and_omni_reference_urls():
     result = await _exec_imagine(ctx, job, "n5")
 
     assert result == "Success"
-    assert provider.imagine_calls == [
-        (
-            "https://cdn.example/shared.png editorial portrait --sw 300 --cw 80 --ow 250 "
-            "--sref https://cdn.example/shared.png::2 https://cdn.example/shared.png::1 "
-            "--cref https://cdn.example/shared.png --oref https://cdn.example/shared.png",
-            "n5",
-        )
-    ]
-    assert job.context.final_prompt == provider.imagine_calls[0][0]
+    assert provider.imagine_calls
+    final_prompt, nonce = provider.imagine_calls[0]
+    assert nonce == "n5"
+    assert final_prompt.startswith("editorial portrait ")
+    assert "https://cdn.example/shared.png" in final_prompt
+    assert (
+        "--sref https://cdn.example/shared.png::2 https://cdn.example/shared.png::1" in final_prompt
+    )
+    assert "--cref https://cdn.example/shared.png" in final_prompt
+    assert "--oref https://cdn.example/shared.png" in final_prompt
+    assert "--sw 300" in final_prompt
+    assert "--cw 80" in final_prompt
+    assert "--ow 250" in final_prompt
+    assert job.context.final_prompt == final_prompt

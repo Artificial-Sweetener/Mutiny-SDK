@@ -34,6 +34,21 @@ def test_normalize_prompt_for_matching_preserves_non_reference_flags():
     assert normalize_prompt_for_matching(prompt) == prompt
 
 
+def test_normalize_prompt_for_matching_ignores_moved_image_chunk_and_reference_groups():
+    original = (
+        "pink twintails tsundere girl --no evil "
+        "<https://s.mj.run/a> <https://s.mj.run/b> --ar 3:4 --seed 7 "
+        "--sref <https://s.mj.run/style> --cref <https://s.mj.run/char>"
+    )
+    rewritten = (
+        "pink twintails tsundere girl --no evil --cref <https://s.mj.run/char> "
+        "--ar 3:4 --seed 7 <https://s.mj.run/a> <https://s.mj.run/b> "
+        "--sref <https://s.mj.run/style>"
+    )
+
+    assert normalize_prompt_for_matching(original) == normalize_prompt_for_matching(rewritten)
+
+
 def test_normalize_prompt_for_matching_treats_video_one_as_video():
     original = "<https://s.mj.run/abcd> magic spell --motion low --bs 1 --video --aspect 199:256"
     rewritten = "<https://s.mj.run/abcd> magic spell --motion low --bs 1 --video 1 --aspect 199:256"

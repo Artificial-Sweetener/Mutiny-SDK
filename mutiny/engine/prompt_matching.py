@@ -20,13 +20,9 @@ from __future__ import annotations
 
 import re
 
+from mutiny.services.prompt_ordering import normalize_imagine_prompt_for_matching
+
 _URL_TOKEN = re.compile(r"<?https?://[^\s>]+>?")
-_TRAILING_REFERENCE_OPTIONS = re.compile(
-    r"(?:\s+--sref\s+(?:<url>(?:::\S+)?\s*)+"
-    r"|\s+--cref\s+(?:<url>\s*)+"
-    r"|\s+--oref\s+<url>\s*)+\s*$",
-    re.IGNORECASE,
-)
 _WHITESPACE = re.compile(r"\s+")
 _VIDEO_ONE_OPTION = re.compile(r"(?i)(?<!\S)--video\s+1(?!\S)")
 _VIDEO_FLAG = re.compile(r"(?i)(?<!\S)--video(?:\s+1)?(?!\S)")
@@ -46,9 +42,10 @@ def normalize_prompt_for_matching(prompt: str | None) -> str:
     if not prompt:
         return ""
     without_urls = _URL_TOKEN.sub("<url>", prompt.strip())
-    without_reference_options = _TRAILING_REFERENCE_OPTIONS.sub("", without_urls)
-    canonical_video_option = _VIDEO_ONE_OPTION.sub("--video", without_reference_options)
+    canonical_video_option = _VIDEO_ONE_OPTION.sub("--video", without_urls)
     collapsed = _WHITESPACE.sub(" ", canonical_video_option).strip()
+    if not _VIDEO_FLAG.search(collapsed):
+        return normalize_imagine_prompt_for_matching(collapsed)
     return _canonicalize_prompt_video_flags(collapsed)
 
 
