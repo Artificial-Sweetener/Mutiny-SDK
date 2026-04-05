@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.1.0 (2026-04-05)
+
+### Bug Fixes
+
+- **user-agent**: Align default Discord fingerprint with Windows Chrome
+  ([`e0a3f77`](https://github.com/Artificial-Sweetener/Mutiny-SDK/commit/e0a3f7765957f677a072028ca40efb95536f8bbe))
+
+### Features
+
+- **imagine**: Add seeded prompt argument ordering
+  ([`4cafe7d`](https://github.com/Artificial-Sweetener/Mutiny-SDK/commit/4cafe7d41b7d83c48d498ac03e040ab68dce43b4))
+
+
 ## v1.0.1 (2026-04-04)
 
 ### Bug Fixes
