@@ -14,10 +14,9 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import tomllib
 from dataclasses import fields
 from pathlib import Path
-
-import tomllib
 
 import mutiny
 from mutiny import (

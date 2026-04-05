@@ -2,7 +2,7 @@
 
 [English](README.md) | **简体中文**
 
-[![License: AGPL v3+](https://img.shields.io/badge/License-AGPLv3%2B-blue.svg)](LICENSE) [![semantic-release](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release) [![PyPI](https://img.shields.io/pypi/v/mutiny-sdk.svg)](https://pypi.org/project/mutiny-sdk/) [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/) [![OpenCV](https://img.shields.io/badge/OpenCV-4.10%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
+[![License: AGPL v3+](https://img.shields.io/badge/License-AGPLv3%2B-blue.svg)](LICENSE) [![semantic-release](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release) [![PyPI](https://img.shields.io/pypi/v/mutiny-sdk.svg)](https://pypi.org/project/mutiny-sdk/) [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/) [![OpenCV](https://img.shields.io/badge/OpenCV-4.10%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
 
 **Mutiny** 是一个**非官方**、**无关联方背书**的 Python 库，用来把 Midjourney 放进你自己的应用里。
 
@@ -73,6 +73,8 @@ Discord 用户令牌是高风险凭据。Mutiny 会尽量把你往更稳妥的�
 如果你在做真正要上线的东西，请使用 keychain 或 secret manager 来存储密钥，并把 `.env` 当成临时脚手架，而不是架构本身。
 
 ## 安装
+
+Mutiny 需要 Python 3.11 或更高版本。
 
 ```bash
 pip install mutiny-sdk

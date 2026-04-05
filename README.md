@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-[![License: AGPL v3+](https://img.shields.io/badge/License-AGPLv3%2B-blue.svg)](LICENSE) [![semantic-release](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release) [![PyPI](https://img.shields.io/pypi/v/mutiny-sdk.svg)](https://pypi.org/project/mutiny-sdk/) [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/) [![OpenCV](https://img.shields.io/badge/OpenCV-4.10%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
+[![License: AGPL v3+](https://img.shields.io/badge/License-AGPLv3%2B-blue.svg)](LICENSE) [![semantic-release](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release) [![PyPI](https://img.shields.io/pypi/v/mutiny-sdk.svg)](https://pypi.org/project/mutiny-sdk/) [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/) [![OpenCV](https://img.shields.io/badge/OpenCV-4.10%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
 
 **Mutiny** is an **unofficial**, **unaffiliated** Python library for putting Midjourney inside your own app.
 
@@ -73,6 +73,8 @@ Discord user tokens are high-risk credentials. Mutiny tries to steer you toward 
 If you are shipping something real, use keychain or secret-manager storage and treat `.env` like temporary scaffolding, not architecture.
 
 ## Installation
+
+Mutiny requires Python 3.11 or newer.
 
 ```bash
 pip install mutiny-sdk

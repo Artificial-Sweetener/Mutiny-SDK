@@ -3,7 +3,7 @@ name = "mutiny-sdk"
 version = "1.1.0"
 description = "Unofficial Midjourney integration SDK."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 authors = [
@@ -35,7 +35,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
@@ -78,11 +77,11 @@ docs = [
 
 [tool.black]
 line-length = 100
-target-version = ["py310", "py311", "py312"]
+target-version = ["py311", "py312"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 extend-exclude = ["examples/mutiny_gui.bak.py"]
 
 [tool.ruff.lint]
@@ -98,7 +97,7 @@ banned-api = { "app" = { msg = "Do not import from app.*; use mutiny.* instead."
 "tests/*.py" = ["TID251"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = false
 warn_unreachable = true
 warn_unused_configs = true
